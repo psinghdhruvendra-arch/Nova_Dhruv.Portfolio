@@ -9,15 +9,26 @@
   <script src="/_sdk/element_sdk.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
   <script>
+    // Early-theme-check to prevent theme flashing during load
+    (function() {
+      const theme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+  <script>
 tailwind.config = {
   theme: {
     extend: {
       colors: {
-        primary: '#091221',
-        secondary: '#0B162A',
-        accent: '#0585E6',
-        pink: '#FD367E',
-        cream: '#F5E9DA'
+        primary: 'rgb(var(--primary-rgb) / <alpha-value>)',
+        secondary: 'rgb(var(--secondary-rgb) / <alpha-value>)',
+        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
+        pink: 'rgb(var(--pink-rgb) / <alpha-value>)',
+        cream: 'rgb(var(--cream-rgb) / <alpha-value>)',
       },
       fontFamily: {
         heading: ['Space Grotesk', 'sans-serif'],
@@ -28,11 +39,78 @@ tailwind.config = {
 }
 </script>
   <style>
+:root {
+  /* Light Theme RGB values — warm indigo-slate palette, NO pure whites */
+  --primary-rgb: 241 244 250;      /* #F1F4FA — cool blue-tinted off-white */
+  --secondary-rgb: 234 238 248;    /* #EAF0F6 — slightly deeper slate-blue tint */
+  --accent-rgb: 2 120 190;         /* #0278BE — slightly deeper sky blue */
+  --pink-rgb: 210 30 110;          /* #D21E6E — richer magenta-pink */
+  --cream-rgb: 15 23 42;           /* #0F172A — deep slate for text */
+
+  /* Light Theme dynamic style variables */
+  --glass-bg: rgba(220, 228, 245, 0.72);        /* frosted indigo-tinted glass */
+  --glass-border: rgba(2, 120, 190, 0.14);
+  --glass-border-glow: rgba(2, 120, 190, 0.28);
+  --glow-color: rgba(2, 120, 190, 0.07);
+  --orb-opacity: 0.11;
+  --card-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.05);
+  --section-stripe: rgba(200, 212, 235, 0.45);  /* subtle section alt-bg stripe */
+  --input-bg: rgba(210, 220, 240, 0.6);
+  --nav-scrolled-bg: rgba(220, 228, 245, 0.92);
+  --skill-bar-track: rgba(180, 196, 224, 0.45);
+}
+
+.dark {
+  /* Dark Theme RGB values (Original Branding Palette) */
+  --primary-rgb: 9 18 33;         /* #091221 */
+  --secondary-rgb: 11 22 42;      /* #0B162A */
+  --accent-rgb: 5 133 230;        /* #0585E6 */
+  --pink-rgb: 253 54 126;         /* #FD367E */
+  --cream-rgb: 245 233 218;       /* #F5E9DA */
+
+  /* Dark Theme dynamic style variables */
+  --glass-bg: rgba(11, 22, 42, 0.6);
+  --glass-border: rgba(5, 133, 230, 0.15);
+  --glass-border-glow: rgba(5, 133, 230, 0.3);
+  --glow-color: rgba(5, 133, 230, 0.12);
+  --orb-opacity: 0.25;
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --section-stripe: transparent;
+  --input-bg: rgba(11, 22, 42, 0.7);
+  --nav-scrolled-bg: rgba(9, 18, 33, 0.95);
+  --skill-bar-track: rgba(255,255,255,0.06);
+}
+
 html, body { height: 100%; margin: 0; }
 * { box-sizing: border-box; }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #091221; }
-::-webkit-scrollbar-thumb { background: #0585E6; border-radius: 3px; }
+::-webkit-scrollbar-track { background: rgb(var(--primary-rgb)); }
+::-webkit-scrollbar-thumb { background: rgb(var(--accent-rgb)); border-radius: 3px; }
+
+/* Light-mode body texture: very subtle dot grid for depth */
+body:not(.dark) {
+  background-image: radial-gradient(circle, rgba(2, 120, 190, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Theme transitions */
+.theme-transition,
+.theme-transition body,
+.theme-transition nav,
+.theme-transition div,
+.theme-transition section,
+.theme-transition a,
+.theme-transition button,
+.theme-transition h1,
+.theme-transition h2,
+.theme-transition h3,
+.theme-transition h4,
+.theme-transition p,
+.theme-transition span,
+.theme-transition i,
+.theme-transition svg {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease !important;
+}
 
 /* Loading Screen */
 #loader {
@@ -98,38 +176,125 @@ html, body { height: 100%; margin: 0; }
 @keyframes grid-move { from { transform: translate(0,0); } to { transform: translate(60px,60px); } }
 
 /* Main site */
-.glass { background: rgba(11,22,42,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(5,133,230,0.15); }
-.glow-border { border: 1px solid rgba(5,133,230,0.3); box-shadow: 0 0 15px rgba(5,133,230,0.1); }
-.card-tilt { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-.card-tilt:hover { transform: perspective(800px) rotateY(3deg) rotateX(-2deg) translateY(-5px); box-shadow: 0 20px 40px rgba(5,133,230,0.15); }
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+}
+.glow-border { border: 1px solid var(--glass-border-glow); box-shadow: 0 0 18px var(--glow-color), var(--card-shadow); }
+.card-tilt {
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.35s ease;
+  will-change: transform, box-shadow;
+  transform-style: preserve-3d;
+}
+.card-tilt:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 24px 48px rgba(2, 120, 190, 0.14), 0 8px 16px rgba(15,23,42,0.08);
+}
+.dark .card-tilt:hover { box-shadow: 0 20px 40px var(--glow-color); }
 .gradient-text { background: linear-gradient(135deg, #17A9E5, #6263D9, #E53D92, #FD7742); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .section-fade { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
 .section-fade.visible { opacity: 1; transform: translateY(0); }
+
+/* Alternate section bg — light mode uses tinted stripe, dark is transparent */
+section.bg-secondary {
+  background-color: var(--section-stripe) !important;
+  background-image: none;
+}
+.dark section.bg-secondary {
+  background-color: rgb(var(--secondary-rgb)) !important;
+}
+
 .nav-link { position: relative; }
-.nav-link::after { content:''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #0585E6, #FD367E); transition: width 0.3s; }
+.nav-link::after { content:''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, rgb(var(--accent-rgb)), rgb(var(--pink-rgb))); transition: width 0.3s; }
 .nav-link:hover::after, .nav-link.active::after { width: 100%; }
-.cta-btn { background: linear-gradient(135deg, #0585E6, #6263D9); position: relative; overflow: hidden; }
+
+/* Navbar scrolled state */
+nav.scrolled {
+  background: var(--nav-scrolled-bg) !important;
+  backdrop-filter: blur(20px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.6) !important;
+  box-shadow: 0 2px 20px rgba(15, 23, 42, 0.10);
+}
+.dark nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.3); }
+
+.cta-btn { background: linear-gradient(135deg, rgb(var(--accent-rgb)), #6263D9); position: relative; overflow: hidden; }
 .cta-btn::before { content:''; position: absolute; inset: -2px; background: linear-gradient(135deg, #17A9E5, #6263D9, #E53D92, #FD7742); border-radius: inherit; z-index: -1; opacity: 0; transition: opacity 0.3s; }
 .cta-btn:hover::before { opacity: 1; }
 .music-btn { animation: soft-pulse 3s ease-in-out infinite; }
 .music-btn.playing { animation: none; box-shadow: 0 0 15px rgba(5,133,230,0.5); }
 @keyframes soft-pulse { 0%,100% { box-shadow: 0 0 5px rgba(5,133,230,0.2); } 50% { box-shadow: 0 0 15px rgba(5,133,230,0.4); } }
-.equalizer-bar { display: inline-block; width: 3px; margin: 0 1px; background: #0585E6; border-radius: 2px; animation: eq 0.8s ease-in-out infinite; }
+.equalizer-bar { display: inline-block; width: 3px; margin: 0 1px; background: rgb(var(--accent-rgb)); border-radius: 2px; animation: eq 0.8s ease-in-out infinite; }
 .equalizer-bar:nth-child(2) { animation-delay: 0.2s; }
 .equalizer-bar:nth-child(3) { animation-delay: 0.4s; }
 @keyframes eq { 0%,100% { height: 4px; } 50% { height: 14px; } }
-.hero-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; animation: orb-float 8s ease-in-out infinite; }
+.hero-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: var(--orb-opacity); animation: orb-float 8s ease-in-out infinite; }
 @keyframes orb-float { 0%,100% { transform: translate(0,0); } 50% { transform: translate(20px,-20px); } }
 .whatsapp-float { position: fixed; bottom: 24px; right: 24px; z-index: 100; width: 56px; height: 56px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,0.4); animation: wa-pulse 2s infinite; cursor: pointer; }
 @keyframes wa-pulse { 0%,100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4); } 50% { box-shadow: 0 4px 30px rgba(37,211,102,0.7); } }
 .skill-card { transition: all 0.3s ease; }
-.skill-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(5,133,230,0.2); border-color: rgba(5,133,230,0.5); }
-.timeline-dot { width: 12px; height: 12px; border-radius: 50%; background: #0585E6; box-shadow: 0 0 10px rgba(5,133,230,0.5); }
+.skill-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(2,120,190,0.18); border-color: rgba(2,120,190,0.45); }
+.dark .skill-card:hover { box-shadow: 0 10px 30px rgba(5,133,230,0.2); border-color: rgba(5,133,230,0.5); }
+.timeline-dot { width: 12px; height: 12px; border-radius: 50%; background: rgb(var(--accent-rgb)); box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.5); }
+
+/* Light-mode skill bar track */
+.skill-bar-track { background: var(--skill-bar-track); }
+
+/* Light-mode text refinements */
+:root .text-cream\/70 { color: rgba(15, 23, 42, 0.70) !important; }
+:root .text-cream\/60 { color: rgba(15, 23, 42, 0.60) !important; }
+:root .text-cream\/80 { color: rgba(15, 23, 42, 0.80) !important; }
+:root .text-cream\/50 { color: rgba(15, 23, 42, 0.50) !important; }
+:root .text-cream\/40 { color: rgba(15, 23, 42, 0.40) !important; }
+
+/* Light-mode focus rings */
+:root button:focus-visible, :root a:focus-visible {
+  outline: 2px solid rgb(var(--accent-rgb));
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Click Ripple animation classes */
+.ripple {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.35);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 50%;
+  animation: ripple-effect 0.6s cubic-bezier(0.1, 0.8, 0.3, 1);
+}
+/* Light mode ripple on non-filled buttons */
+:root .ripple-btn:not(.cta-btn) .ripple { background: rgba(2, 120, 190, 0.15); }
+@keyframes ripple-effect {
+  from { width: 0px; height: 0px; opacity: 0.6; }
+  to { width: 600px; height: 600px; opacity: 0; }
+}
+
+/* Stagger animation reveal */
+.stagger-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ── Light-mode hero section gradient ── */
+:root #home {
+  background: linear-gradient(160deg,
+    rgba(210, 225, 250, 0.7) 0%,
+    rgb(var(--primary-rgb)) 60%,
+    rgba(220, 210, 248, 0.5) 100%);
+}
+.dark #home { background: none; }
 </style>
   <style>body { box-sizing: border-box; }</style>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
- <script src="/_sdk/telemetry_sdk.js"></script></head>
- <body class="h-full bg-primary text-cream font-body overflow-auto"><!-- LOADING SCREEN -->
+ <script src="/_sdk/telemetry_sdk.js"></script></head> <body class="h-full bg-primary text-cream font-body overflow-auto">
+  <!-- Interactive Particle Background Canvas -->
+  <canvas id="bg-particles" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+  <!-- LOADING SCREEN -->
   <div id="loader">
    <div class="loader-grid"></div>
    <div class="loader-particles" id="particles"></div>
@@ -149,10 +314,37 @@ html, body { height: 100%; margin: 0; }
   <div id="main-site" style="opacity:0; transition: opacity 0.6s ease 0.3s;"><!-- NAVBAR -->
    <nav class="fixed top-0 left-0 w-full z-50 glass px-6 py-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between"><a href="#home" class="font-heading text-2xl font-bold text-accent" style="text-shadow: 0 0 10px rgba(5,133,230,0.4);">o_0</a>
-     <div class="hidden md:flex items-center gap-8"><a href="#home" class="nav-link text-sm text-cream/80 hover:text-cream transition">Home</a> <a href="#about" class="nav-link text-sm text-cream/80 hover:text-cream transition">About</a> <a href="#projects" class="nav-link text-sm text-cream/80 hover:text-cream transition">Projects</a> <a href="#casestudy" class="nav-link text-sm text-cream/80 hover:text-cream transition">Case Study</a> <a href="#skills" class="nav-link text-sm text-cream/80 hover:text-cream transition">Skills</a> <a href="#contact" class="nav-link text-sm text-cream/80 hover:text-cream transition">Contact</a> <button id="music-toggle" class="music-btn w-9 h-9 rounded-full glass flex items-center justify-center hover:border-accent/50 transition" title="Enable Ambient Mode"> <i data-lucide="music" class="w-4 h-4 text-accent"></i> </button>
-     </div><button id="mobile-menu-btn" class="md:hidden text-cream"><i data-lucide="menu" class="w-6 h-6"></i></button>
+     <div class="hidden md:flex items-center gap-8">
+      <a href="#home" class="nav-link text-sm text-cream/80 hover:text-cream transition">Home</a>
+      <a href="#about" class="nav-link text-sm text-cream/80 hover:text-cream transition">About</a>
+      <a href="#projects" class="nav-link text-sm text-cream/80 hover:text-cream transition">Projects</a>
+      <a href="#casestudy" class="nav-link text-sm text-cream/80 hover:text-cream transition">Case Study</a>
+      <a href="#skills" class="nav-link text-sm text-cream/80 hover:text-cream transition">Skills</a>
+      <a href="#pricing" class="nav-link text-sm text-cream/80 hover:text-cream transition">Pricing</a>
+      <a href="#contact" class="nav-link text-sm text-cream/80 hover:text-cream transition">Contact</a>
+      <button id="theme-toggle" class="w-9 h-9 rounded-full glass flex items-center justify-center hover:border-accent/50 transition relative overflow-hidden" title="Toggle Theme">
+       <i data-lucide="sun" class="w-4 h-4 text-accent absolute transition-all duration-500 transform dark:-translate-y-10 dark:opacity-0"></i>
+       <i data-lucide="moon" class="w-4 h-4 text-accent absolute transition-all duration-500 transform translate-y-10 opacity-0 dark:translate-y-0 dark:opacity-100"></i>
+      </button>
+      <button id="music-toggle" class="music-btn w-9 h-9 rounded-full glass flex items-center justify-center hover:border-accent/50 transition" title="Enable Ambient Mode"> <i data-lucide="music" class="w-4 h-4 text-accent"></i> </button>
+     </div>
+     <!-- Mobile Actions -->
+     <div class="flex items-center gap-3 md:hidden">
+      <button id="theme-toggle-mobile" class="w-9 h-9 rounded-full glass flex items-center justify-center hover:border-accent/50 transition relative overflow-hidden" title="Toggle Theme">
+       <i data-lucide="sun" class="w-4 h-4 text-accent absolute transition-all duration-500 transform dark:-translate-y-10 dark:opacity-0"></i>
+       <i data-lucide="moon" class="w-4 h-4 text-accent absolute transition-all duration-500 transform translate-y-10 opacity-0 dark:translate-y-0 dark:opacity-100"></i>
+      </button>
+      <button id="mobile-menu-btn" class="text-cream"><i data-lucide="menu" class="w-6 h-6"></i></button>
+     </div>
     </div>
-    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 flex flex-col gap-3"><a href="#home" class="text-sm text-cream/80 hover:text-cream">Home</a> <a href="#about" class="text-sm text-cream/80 hover:text-cream">About</a> <a href="#projects" class="text-sm text-cream/80 hover:text-cream">Projects</a> <a href="#casestudy" class="text-sm text-cream/80 hover:text-cream">Case Study</a> <a href="#skills" class="text-sm text-cream/80 hover:text-cream">Skills</a> <a href="#contact" class="text-sm text-cream/80 hover:text-cream">Contact</a>
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 flex flex-col gap-3">
+     <a href="#home" class="text-sm text-cream/80 hover:text-cream">Home</a>
+     <a href="#about" class="text-sm text-cream/80 hover:text-cream">About</a>
+     <a href="#projects" class="text-sm text-cream/80 hover:text-cream">Projects</a>
+     <a href="#casestudy" class="text-sm text-cream/80 hover:text-cream">Case Study</a>
+     <a href="#skills" class="text-sm text-cream/80 hover:text-cream">Skills</a>
+     <a href="#pricing" class="text-sm text-cream/80 hover:text-cream">Pricing</a>
+     <a href="#contact" class="text-sm text-cream/80 hover:text-cream">Contact</a>
     </div>
    </nav><!-- HERO -->
    <section id="home" class="relative min-h-full flex items-center justify-center overflow-hidden px-6 pt-20">
@@ -257,42 +449,258 @@ html, body { height: 100%; margin: 0; }
      </div>
     </div>
    </section><!-- PROJECTS -->
-   <section id="projects" class="py-24 px-6">
-    <div class="max-w-6xl mx-auto section-fade">
-     <h2 class="font-heading text-4xl font-bold mb-4 text-center">My <span class="gradient-text">Projects</span></h2>
-     <p class="text-cream/60 text-center mb-12">A showcase of my frontend development work</p><!-- Featured -->
-     <div class="glass rounded-2xl p-8 mb-12 glow-border card-tilt"><span class="text-xs font-semibold px-3 py-1 rounded-full bg-accent/20 text-accent mb-4 inline-block">⭐ Featured Project</span>
-      <h3 class="font-heading text-3xl font-bold mb-3">Baba Agro Hub</h3>
-      <p class="text-cream/70 mb-4">Professional freelance website developed for a real client with responsive layouts and modern UI practices.</p>
-      <div class="flex flex-wrap gap-2 mb-6"><span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">HTML</span> <span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">CSS</span> <span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">JavaScript</span> <span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">Tailwind CSS</span>
+    <section id="projects" class="py-24 px-6">
+     <div class="max-w-6xl mx-auto section-fade">
+      <h2 class="font-heading text-4xl font-bold mb-4 text-center">My <span class="gradient-text">Projects</span></h2>
+      <p class="text-cream/60 text-center mb-12">A showcase of my frontend development work</p>
+      
+      <!-- Featured Project -->
+      <div class="glass rounded-2xl overflow-hidden mb-12 glow-border card-tilt flex flex-col lg:flex-row gap-8 stagger-item">
+       <div class="lg:w-1/2 overflow-hidden relative group min-h-[300px]">
+        <img src="./assets/baba_agro.png" alt="Baba Agro Hub" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+        <div class="absolute inset-0 bg-gradient-to-t from-primary/50 to-transparent pointer-events-none"></div>
+       </div>
+       <div class="lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-accent/20 text-accent mb-4 inline-block w-fit">⭐ Featured Project</span>
+        <h3 class="font-heading text-3xl font-bold mb-3">Baba Agro Hub</h3>
+        <p class="text-cream/70 mb-6">Professional freelance website developed for a real client with responsive layouts and modern UI practices. Featuring high-performance agricultural hub portals and customized dashboards.</p>
+        <div class="flex flex-wrap gap-2 mb-8">
+         <span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">HTML</span>
+         <span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">CSS</span>
+         <span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">JavaScript</span>
+         <span class="text-xs px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20">Tailwind CSS</span>
+        </div>
+        <div class="flex gap-4">
+         <a href="https://psinghdhruvendra-arch.github.io/BabaAgroHub/" target="_blank" rel="noopener noreferrer" class="cta-btn px-6 py-2.5 rounded-lg text-white text-sm font-medium flex items-center gap-2 hover:scale-105 transition ripple-btn">
+          <i data-lucide="external-link" class="w-4 h-4"></i> Live Demo
+         </a>
+         <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="px-6 py-2.5 rounded-lg border border-accent/40 text-accent text-sm font-medium hover:bg-accent/10 transition flex items-center gap-2 ripple-btn">
+          <i data-lucide="github" class="w-4 h-4"></i> Repository
+         </a>
+        </div>
+       </div>
       </div>
-      <div class="flex gap-4"><a href="https://psinghdhruvendra-arch.github.io/BabaAgroHub/" target="_blank" rel="noopener noreferrer" class="cta-btn px-6 py-2 rounded-lg text-white text-sm font-medium">Live Demo</a> <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="px-6 py-2 rounded-lg border border-accent/40 text-accent text-sm font-medium hover:bg-accent/10 transition">Repository</a>
-      </div>
-     </div><!-- Grid -->
-     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="glass rounded-xl p-6 card-tilt glow-border">
-       <h4 class="font-heading text-lg font-semibold mb-2">Varsha Coaching Center</h4>
-       <p class="text-cream/60 text-sm mb-4">Freelance coaching institute website with clean UI and responsive layout.</p><a href="https://psinghdhruvendra-arch.github.io/Varsha-Coching-classes/" target="_blank" rel="noopener noreferrer" class="text-accent text-sm hover:underline">View Live →</a>
-      </div>
-      <div class="glass rounded-xl p-6 card-tilt glow-border">
-       <h4 class="font-heading text-lg font-semibold mb-2">Itachi Uchiha Landing</h4>
-       <p class="text-cream/60 text-sm mb-4">Anime-inspired cinematic landing page with visual storytelling and immersive UI.</p><a href="https://psinghdhruvendra-arch.github.io/Itachi-The-silence-behind-the-Massacre/" target="_blank" rel="noopener noreferrer" class="text-accent text-sm hover:underline">View Live →</a>
-      </div>
-      <div class="glass rounded-xl p-6 card-tilt glow-border">
-       <h4 class="font-heading text-lg font-semibold mb-2">Obito Uchiha Landing</h4>
-       <p class="text-cream/60 text-sm mb-4">Character-focused immersive landing page with smooth animations and emotional design.</p><a href="https://psinghdhruvendra-arch.github.io/Obito-Uchiha/" target="_blank" rel="noopener noreferrer" class="text-accent text-sm hover:underline">View Live →</a>
-      </div>
-      <div class="glass rounded-xl p-6 card-tilt glow-border">
-       <h4 class="font-heading text-lg font-semibold mb-2">Indian Biodiversity</h4>
-       <p class="text-cream/60 text-sm mb-4">Wildlife-inspired informational platform focused on Indian biodiversity exploration.</p><a href="https://psinghdhruvendra-arch.github.io/theWildlifeOfIndia/" target="_blank" rel="noopener noreferrer" class="text-accent text-sm hover:underline">View Live →</a>
-      </div>
-      <div class="glass rounded-xl p-6 card-tilt glow-border">
-       <h4 class="font-heading text-lg font-semibold mb-2">Tsukiko Uchiha (AI)</h4>
-       <p class="text-cream/60 text-sm mb-4">AI-assisted cinematic landing page built using modern AI workflows.</p><a href="https://sukiko-chronicle--singh07varsha.replit.app/" target="_blank" rel="noopener noreferrer" class="text-accent text-sm hover:underline">View Live →</a>
+
+      <!-- Projects Grid -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+       <!-- Card 1: Mantar -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80" alt="Mantar" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-accent/80 text-white backdrop-blur">App Demo</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Mantar</h4>
+          <p class="text-cream/60 text-xs mb-4">A high-fidelity modern web application built for seamless portfolio storytelling and layout rendering.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">React</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">Tailwind CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">Vite</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://psinghdhruvendra-arch.github.io/Mantar_Demo/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
+
+       <!-- Card 2: Cuts & Curves Salon -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80" alt="Cuts & Curves Salon" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-pink/80 text-white backdrop-blur">Business Website</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Cuts &amp; Curves Salon</h4>
+          <p class="text-cream/60 text-xs mb-4">Premium hair and beauty salon landing page with service tables, responsive booking cards, and elegant styling.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">HTML</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">JavaScript</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://psinghdhruvendra-arch.github.io/Cuts-and-Curves_Salon..DEMO/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
+
+       <!-- Card 3: Ultimate Fitness Gym -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80" alt="Ultimate Fitness Gym" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-accent/80 text-white backdrop-blur">Gym Branding</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Ultimate Fitness Gym</h4>
+          <p class="text-cream/60 text-xs mb-4">High-performance gym marketing website showcasing trainers, dynamic pricing, and routines.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">HTML</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">Tailwind CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">JavaScript</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://psinghdhruvendra-arch.github.io/Ultimate-Fitness-GYM/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
+
+       <!-- Card 4: Varsha Coaching Center -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="./assets/varsha_coaching.png" alt="Varsha Coaching Center" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-pink/80 text-white backdrop-blur">Educational</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Varsha Coaching Center</h4>
+          <p class="text-cream/60 text-xs mb-4">Freelance coaching institute platform with interactive course outlines, schedules, and forms.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">HTML</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">JavaScript</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://psinghdhruvendra-arch.github.io/Varsha-Coching-classes/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
+
+       <!-- Card 5: Itachi Uchiha Landing -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="./assets/itachi_landing.png" alt="Itachi Uchiha Landing" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-accent/80 text-white backdrop-blur">Immersive Landing</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Itachi Uchiha Landing</h4>
+          <p class="text-cream/60 text-xs mb-4">Anime-inspired cinematic page detailing character lore with immersive visuals and atmospheric audio.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">HTML</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">JavaScript</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://psinghdhruvendra-arch.github.io/Itachi-The-silence-behind-the-Massacre/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
+
+       <!-- Card 6: Obito Uchiha Landing -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="./assets/obito_landing.png" alt="Obito Uchiha Landing" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-pink/80 text-white backdrop-blur">Immersive Landing</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Obito Uchiha Landing</h4>
+          <p class="text-cream/60 text-xs mb-4">Character storytelling website with custom canvas particle systems and audio-visual mechanics.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">HTML</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">JavaScript</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://psinghdhruvendra-arch.github.io/Obito-Uchiha/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
+
+       <!-- Card 7: Indian Biodiversity -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="https://images.unsplash.com/photo-1575550959106-5a7defe28b56?auto=format&fit=crop&w=800&q=80" alt="Indian Biodiversity" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-accent/80 text-white backdrop-blur">Educational</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Indian Biodiversity</h4>
+          <p class="text-cream/60 text-xs mb-4">Wildlife conservation portal celebrating natural eco-regions with parallax media grids.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">HTML</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">JavaScript</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://psinghdhruvendra-arch.github.io/theWildlifeOfIndia/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
+
+       <!-- Card 8: Tsukiko Uchiha (AI) -->
+       <div class="glass rounded-xl overflow-hidden card-tilt glow-border flex flex-col justify-between stagger-item">
+        <div class="overflow-hidden h-48 relative group">
+         <img src="https://images.unsplash.com/photo-1515621061946-eff1c2a352bd?auto=format&fit=crop&w=800&q=80" alt="Tsukiko Uchiha (AI)" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+         <span class="absolute top-3 right-3 text-xs font-semibold px-2 py-0.5 rounded bg-pink/80 text-white backdrop-blur">AI Assisted</span>
+        </div>
+        <div class="p-6 flex-grow flex flex-col justify-between">
+         <div>
+          <h4 class="font-heading text-lg font-bold mb-2">Tsukiko Uchiha (AI)</h4>
+          <p class="text-cream/60 text-xs mb-4">Cyberpunk character layout with neon effects and modular styling using AI-driven creation scripts.</p>
+          <div class="flex flex-wrap gap-1.5 mb-6">
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">HTML</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">Tailwind CSS</span>
+           <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-pink/10 text-pink border border-pink/20">AI Workflows</span>
+          </div>
+         </div>
+         <div class="flex gap-3">
+          <a href="https://sukiko-chronicle--singh07varsha.replit.app/" target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-2 px-4 rounded text-white text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:scale-105 transition ripple-btn">
+           <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Live Demo
+          </a>
+          <a href="https://github.com/psinghdhruvendra-arch" target="_blank" rel="noopener noreferrer" class="text-center py-2 px-4 rounded border border-accent/40 text-accent text-xs font-medium flex-1 flex items-center justify-center gap-1.5 hover:bg-accent/10 transition ripple-btn">
+           <i data-lucide="github" class="w-3.5 h-3.5"></i> GitHub
+          </a>
+         </div>
+        </div>
+       </div>
       </div>
      </div>
-    </div>
-   </section><!-- CASE STUDY -->
+    </section><!-- CASE STUDY -->
    <section id="casestudy" class="py-24 px-6 bg-secondary">
     <div class="max-w-5xl mx-auto section-fade">
      <h2 class="font-heading text-4xl font-bold mb-4 text-center">Case <span class="gradient-text">Study</span></h2>
@@ -332,7 +740,7 @@ html, body { height: 100%; margin: 0; }
          <div class="flex justify-between text-sm mb-1">
           <span>HTML/CSS</span><span class="text-accent">90%</span>
          </div>
-         <div class="h-1.5 bg-primary rounded-full">
+         <div class="h-1.5 skill-bar-track rounded-full">
           <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:90%"></div>
          </div>
         </div>
@@ -340,7 +748,7 @@ html, body { height: 100%; margin: 0; }
          <div class="flex justify-between text-sm mb-1">
           <span>JavaScript</span><span class="text-accent">80%</span>
          </div>
-         <div class="h-1.5 bg-primary rounded-full">
+         <div class="h-1.5 skill-bar-track rounded-full">
           <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:80%"></div>
          </div>
         </div>
@@ -348,7 +756,7 @@ html, body { height: 100%; margin: 0; }
          <div class="flex justify-between text-sm mb-1">
           <span>React</span><span class="text-accent">70%</span>
          </div>
-         <div class="h-1.5 bg-primary rounded-full">
+         <div class="h-1.5 skill-bar-track rounded-full">
           <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:70%"></div>
          </div>
         </div>
@@ -356,7 +764,7 @@ html, body { height: 100%; margin: 0; }
          <div class="flex justify-between text-sm mb-1">
           <span>Tailwind CSS</span><span class="text-accent">85%</span>
          </div>
-         <div class="h-1.5 bg-primary rounded-full">
+         <div class="h-1.5 skill-bar-track rounded-full">
           <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:85%"></div>
          </div>
         </div>
@@ -367,34 +775,34 @@ html, body { height: 100%; margin: 0; }
        <div class="space-y-3">
         <div>
          <div class="flex justify-between text-sm mb-1">
-          <span>Java</span><span class="text-accent">65%</span>
+          <span>Java</span><span class="text-accent">80%</span>
          </div>
-         <div class="h-1.5 bg-primary rounded-full">
-          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:65%"></div>
-         </div>
-        </div>
-        <div>
-         <div class="flex justify-between text-sm mb-1">
-          <span>Python</span><span class="text-accent">60%</span>
-         </div>
-         <div class="h-1.5 bg-primary rounded-full">
-          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:60%"></div>
+         <div class="h-1.5 skill-bar-track rounded-full">
+          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:80%"></div>
          </div>
         </div>
         <div>
          <div class="flex justify-between text-sm mb-1">
-          <span>Node.js</span><span class="text-accent">55%</span>
+          <span>Python</span><span class="text-accent">75%</span>
          </div>
-         <div class="h-1.5 bg-primary rounded-full">
-          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:55%"></div>
+         <div class="h-1.5 skill-bar-track rounded-full">
+          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:75%"></div>
          </div>
         </div>
         <div>
          <div class="flex justify-between text-sm mb-1">
-          <span>SQL</span><span class="text-accent">50%</span>
+          <span>Node.js</span><span class="text-accent">70%</span>
          </div>
-         <div class="h-1.5 bg-primary rounded-full">
-          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:50%"></div>
+         <div class="h-1.5 skill-bar-track rounded-full">
+          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:70%"></div>
+         </div>
+        </div>
+        <div>
+         <div class="flex justify-between text-sm mb-1">
+          <span>SQL</span><span class="text-accent">68%</span>
+         </div>
+         <div class="h-1.5 skill-bar-track rounded-full">
+          <div class="h-full bg-gradient-to-r from-accent to-pink rounded-full" style="width:68%"></div>
          </div>
         </div>
        </div>
@@ -425,7 +833,169 @@ html, body { height: 100%; margin: 0; }
       </div>
      </div>
     </div>
-   </section><!-- CONTACT -->
+   </section>
+
+   <!-- SERVICES & PRICING -->
+   <section id="pricing" class="py-24 px-6 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto section-fade">
+     <h2 class="font-heading text-4xl font-bold mb-4 text-center">Services &amp; <span class="gradient-text">Pricing</span></h2>
+     <p class="text-cream/60 text-center mb-16 max-w-xl mx-auto font-medium">Flexible pricing tailored to your project requirements.</p>
+     
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+      <!-- Card 1: Landing Page -->
+      <div class="glass rounded-2xl p-8 card-tilt glow-border flex flex-col justify-between stagger-item">
+       <div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-accent/20 text-accent mb-6 inline-block">SaaS / Product</span>
+        <h3 class="font-heading text-2xl font-bold mb-2">Landing Page</h3>
+        <p class="text-cream/60 text-sm mb-6">Perfect for product launches and high-conversion marketing.</p>
+        <div class="mb-8">
+         <span class="text-xs text-cream/50 block">Starting at</span>
+         <span class="text-3xl font-bold text-accent">₹4,999</span>
+        </div>
+        <ul class="space-y-3 mb-8 text-sm text-cream/80">
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Responsive Design</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Modern UI</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>SEO Ready</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Fast Performance</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Source Code</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Deployment</span>
+         </li>
+        </ul>
+       </div>
+       <a href="https://wa.me/919410521000?text=Hi%20Nova,%20I'm%20interested%20in%20your%20Landing%20Page%20package." target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-3 rounded-lg text-white font-medium hover:scale-105 transition mt-auto block ripple-btn">Let's Build Together</a>
+      </div>
+
+      <!-- Card 2: Business Website -->
+      <div class="glass rounded-2xl p-8 card-tilt glow-border flex flex-col justify-between stagger-item">
+       <div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-pink/20 text-pink mb-6 inline-block">Corporate / Brand</span>
+        <h3 class="font-heading text-2xl font-bold mb-2">Business Website</h3>
+        <p class="text-cream/60 text-sm mb-6">Complete digital presence for local businesses and brands.</p>
+        <div class="mb-8">
+         <span class="text-xs text-cream/50 block">Starting at</span>
+         <span class="text-3xl font-bold text-pink">₹9,999</span>
+        </div>
+        <ul class="space-y-3 mb-8 text-sm text-cream/80">
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>Multi-page Website</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>Responsive</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>Contact Forms</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>SEO</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>Deployment</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>Smooth Animations</span>
+         </li>
+        </ul>
+       </div>
+       <a href="https://wa.me/919410521000?text=Hi%20Nova,%20I'm%20interested%20in%20your%20Business%20Website%20package." target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-3 rounded-lg text-white font-medium hover:scale-105 transition mt-auto block ripple-btn">Let's Build Together</a>
+      </div>
+
+      <!-- Card 3: Premium Portfolio -->
+      <div class="glass rounded-2xl p-8 card-tilt glow-border border-accent/40 relative flex flex-col justify-between stagger-item">
+       <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-accent to-pink text-white text-xs font-semibold px-4 py-1 rounded-full uppercase tracking-wider shadow-lg">Most Popular</div>
+       <div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-accent/20 text-accent mb-6 inline-block mt-2">Freelancers / Creatives</span>
+        <h3 class="font-heading text-2xl font-bold mb-2">Premium Portfolio</h3>
+        <p class="text-cream/60 text-sm mb-6">Interactive portfolios with bespoke cinematic animations.</p>
+        <div class="mb-8">
+         <span class="text-xs text-cream/50 block">Starting at</span>
+         <span class="text-3xl font-bold text-accent">₹14,999</span>
+        </div>
+        <ul class="space-y-3 mb-8 text-sm text-cream/80">
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Premium UI/UX</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Interactive Components</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Responsive Design</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>SEO</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-accent flex-shrink-0"></i>
+          <span>Performance Optimization</span>
+         </li>
+        </ul>
+       </div>
+       <a href="https://wa.me/919410521000?text=Hi%20Nova,%20I'm%20interested%20in%20your%20Premium%20Portfolio%20package." target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-3 rounded-lg text-white font-medium hover:scale-105 transition mt-auto block ripple-btn">Let's Build Together</a>
+      </div>
+
+      <!-- Card 4: Custom Web Application -->
+      <div class="glass rounded-2xl p-8 card-tilt glow-border flex flex-col justify-between stagger-item">
+       <div>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full bg-pink/20 text-pink mb-6 inline-block">SaaS / Enterprise</span>
+        <h3 class="font-heading text-2xl font-bold mb-2">Custom Web App</h3>
+        <p class="text-cream/60 text-sm mb-6">Fully custom web platforms with backend integrations.</p>
+        <div class="mb-8">
+         <span class="text-xs text-cream/50 block">Price</span>
+         <span class="text-3xl font-bold text-pink">Let's Discuss</span>
+        </div>
+        <ul class="space-y-3 mb-8 text-sm text-cream/80">
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>Authentication</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>APIs &amp; Database</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>Dashboard &amp; Admin Panel</span>
+         </li>
+         <li class="flex items-center gap-2.5">
+          <i data-lucide="check" class="w-4 h-4 text-pink flex-shrink-0"></i>
+          <span>AI Integration (if required)</span>
+         </li>
+        </ul>
+       </div>
+       <a href="https://wa.me/919410521000?text=Hi%20Nova,%20I'm%20interested%20in%20your%20Custom%20Web%20Application%20package." target="_blank" rel="noopener noreferrer" class="cta-btn text-center py-3 rounded-lg text-white font-medium hover:scale-105 transition mt-auto block ripple-btn">Let's Build Together</a>
+      </div>
+     </div>
+     
+     <p class="text-xs text-cream/40 text-center italic">Final pricing depends on project complexity and required features.</p>
+    </div>
+   </section>
+
    <section id="contact" class="py-24 px-6 bg-secondary">
     <div class="max-w-4xl mx-auto section-fade">
      <h2 class="font-heading text-4xl font-bold mb-4 text-center">Get In <span class="gradient-text">Touch</span></h2>
@@ -446,32 +1016,220 @@ html, body { height: 100%; margin: 0; }
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
    </svg></a>
   <script>
-// Loading screen particles
+// Helper to convert hex to space-separated RGB
+const hexToRgb = (hex) => {
+  if (!hex || hex[0] !== '#') return hex;
+  let c = hex.substring(1);
+  if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  const num = parseInt(c, 16);
+  return `${(num >> 16) & 255} ${(num >> 8) & 255} ${num & 255}`;
+};
+
+// Canvas Particle System
+(function() {
+  const canvas = document.getElementById('bg-particles');
+  const ctx = canvas.getContext('2d');
+
+  let particles = [];
+  let animationId = null;
+  const mouse = { x: null, y: null, radius: 120 };
+
+  // Set particle options based on device width
+  function getParticleCount() {
+    return window.innerWidth < 768 ? 30 : 85;
+  }
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initParticles();
+  }
+
+  class Particle {
+    constructor() {
+      this.reset(true);
+    }
+
+    reset(initial = false) {
+      this.x = Math.random() * canvas.width;
+      this.y = initial ? Math.random() * canvas.height : (Math.random() > 0.5 ? -10 : canvas.height + 10);
+      this.size = Math.random() * 2.5 + 0.8;
+      
+      const speedScale = window.innerWidth < 768 ? 0.35 : 0.6;
+      this.vx = (Math.random() - 0.5) * speedScale;
+      this.vy = (Math.random() - 0.5) * speedScale;
+      
+      this.colorIndex = Math.floor(Math.random() * 3);
+      this.baseAlpha = Math.random() * 0.4 + 0.2;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Wrap around screen bounds
+      if (this.x < -20) this.x = canvas.width + 20;
+      if (this.x > canvas.width + 20) this.x = -20;
+      if (this.y < -20) this.y = canvas.height + 20;
+      if (this.y > canvas.height + 20) this.y = -20;
+
+      // Mouse interaction (Repulsion)
+      if (mouse.x !== null && mouse.y !== null) {
+        const dx = this.x - mouse.x;
+        const dy = this.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < mouse.radius) {
+          const force = (mouse.radius - dist) / mouse.radius;
+          const angle = Math.atan2(dy, dx);
+          this.x += Math.cos(angle) * force * 1.8;
+          this.y += Math.sin(angle) * force * 1.8;
+        }
+      }
+    }
+
+    draw(isDark) {
+      // Determine colors based on active theme
+      let color;
+      if (isDark) {
+        const colors = [
+          `rgba(59, 130, 246, ${this.baseAlpha})`, // Electric Blue
+          `rgba(139, 92, 246, ${this.baseAlpha})`, // Purple
+          `rgba(255, 255, 255, ${this.baseAlpha * 0.5})` // Low-opacity White
+        ];
+        color = colors[this.colorIndex];
+      } else {
+        const colors = [
+          `rgba(2, 132, 199, ${this.baseAlpha})`,  // Blue
+          `rgba(79, 70, 229, ${this.baseAlpha})`,  // Indigo
+          `rgba(148, 163, 184, ${this.baseAlpha * 0.6})` // Gray
+        ];
+        color = colors[this.colorIndex];
+      }
+
+      // Parallax scroll wrap modulo offset
+      const scrollOffset = (window.scrollY * 0.15) % canvas.height;
+      let renderY = (this.y - scrollOffset + canvas.height) % canvas.height;
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(this.x, renderY, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function initParticles() {
+    particles = [];
+    const count = getParticleCount();
+    for (let i = 0; i < count; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function drawLines(isDark) {
+    const maxDist = 95;
+    const scrollOffset = (window.scrollY * 0.15) % canvas.height;
+    const lineRgb = isDark ? '99, 102, 241' : '79, 70, 229'; // Indigo shades
+
+    for (let i = 0; i < particles.length; i++) {
+      const p1 = particles[i];
+      const y1 = (p1.y - scrollOffset + canvas.height) % canvas.height;
+
+      for (let j = i + 1; j < particles.length; j++) {
+        const p2 = particles[j];
+        const y2 = (p2.y - scrollOffset + canvas.height) % canvas.height;
+
+        const dx = p1.x - p2.x;
+        const dy = y1 - y2;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < maxDist) {
+          const alpha = (1 - dist / maxDist) * 0.12;
+          ctx.strokeStyle = `rgba(${lineRgb}, ${alpha})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, y1);
+          ctx.lineTo(p2.x, y2);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const isDark = document.documentElement.classList.contains('dark');
+
+    particles.forEach(p => {
+      p.update();
+      p.draw(isDark);
+    });
+
+    drawLines(isDark);
+    animationId = requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+  
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  window.addEventListener('mouseleave', () => {
+    mouse.x = null;
+    mouse.y = null;
+  });
+
+  resizeCanvas();
+  animate();
+})();
+
+// Loading screen particles (Original loader support)
 const particlesEl = document.getElementById('particles');
-for (let i = 0; i < 20; i++) {
-  const p = document.createElement('div');
-  p.className = 'particle';
-  p.style.left = Math.random() * 100 + '%';
-  p.style.top = Math.random() * 100 + '%';
-  p.style.animationDelay = Math.random() * 4 + 's';
-  p.style.animationDuration = (3 + Math.random() * 3) + 's';
-  particlesEl.appendChild(p);
+if (particlesEl) {
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 4 + 's';
+    p.style.animationDuration = (3 + Math.random() * 3) + 's';
+    particlesEl.appendChild(p);
+  }
 }
 
-// Loading transition
+// Loading transition fade-out
 setTimeout(() => {
   document.getElementById('loader').classList.add('fade-out');
   document.getElementById('main-site').style.opacity = '1';
   document.getElementById('wa-float').style.display = 'flex';
+  
+  // Apply theme transition class after loading screen to avoid jumpiness
+  setTimeout(() => {
+    document.documentElement.classList.add('theme-transition');
+  }, 400);
 }, 3300);
 
-// Scroll animations
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.section-fade').forEach(el => observer.observe(el));
+// Staggered Scroll Reveal Animations
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const staggerItems = e.target.querySelectorAll('.stagger-item');
+      if (staggerItems.length > 0) {
+        staggerItems.forEach((item, index) => {
+          setTimeout(() => {
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+          }, index * 100);
+        });
+      }
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.section-fade').forEach(el => revealObserver.observe(el));
 
-// Mobile menu
+// Mobile menu toggle
 document.getElementById('mobile-menu-btn').addEventListener('click', () => {
   document.getElementById('mobile-menu').classList.toggle('hidden');
 });
@@ -486,6 +1244,108 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
   });
 });
 
+// Navbar: scrolled state + active section highlighting
+(function() {
+  const nav = document.querySelector('nav');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('section[id]');
+
+  function onScroll() {
+    // Scrolled glass effect
+    if (window.scrollY > 60) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+
+    // Active section detection
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 100;
+      if (window.scrollY >= sectionTop) {
+        current = section.getAttribute('id');
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === '#' + current) {
+        link.classList.add('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // run once on load
+})();
+
+// Theme Switcher Toggle Function
+const themeToggleBtn = document.getElementById('theme-toggle');
+const themeToggleMobileBtn = document.getElementById('theme-toggle-mobile');
+
+function toggleTheme() {
+  const isDark = document.documentElement.classList.contains('dark');
+  if (isDark) {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  } else {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  }
+}
+
+if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+if (themeToggleMobileBtn) themeToggleMobileBtn.addEventListener('click', toggleTheme);
+
+// Global Button Click Ripple Effect
+document.addEventListener('click', function(e) {
+  const targetBtn = e.target.closest('.cta-btn, button, .ripple-btn');
+  if (targetBtn) {
+    const rect = targetBtn.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    
+    if (window.getComputedStyle(targetBtn).position === 'static') {
+      targetBtn.style.position = 'relative';
+    }
+    targetBtn.style.overflow = 'hidden';
+    
+    targetBtn.appendChild(ripple);
+    setTimeout(() => { ripple.remove(); }, 600);
+  }
+});
+
+// Custom 3D Card Tilt Effect
+if (window.innerWidth >= 1024) {
+  document.addEventListener('mousemove', function(e) {
+    const card = e.target.closest('.card-tilt');
+    if (card) {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const xc = rect.width / 2;
+      const yc = rect.height / 2;
+      
+      const angleX = ((yc - y) / yc) * 6;
+      const angleY = ((x - xc) / xc) * 6;
+      
+      card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateY(-8px)`;
+    }
+  });
+
+  document.addEventListener('mouseout', function(e) {
+    const card = e.target.closest('.card-tilt');
+    if (card && (!e.relatedTarget || !card.contains(e.relatedTarget))) {
+      card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+    }
+  });
+}
+
 // Music system using Web Audio API
 let audioCtx, musicPlaying = false, oscillators = [];
 const musicBtn = document.getElementById('music-toggle');
@@ -496,7 +1356,7 @@ function createAmbientMusic() {
   gain.gain.value = 0;
   gain.connect(audioCtx.destination);
 
-  // Ambient pad
+  // Ambient pad notes
   const notes = [130.81, 164.81, 196.00, 261.63];
   notes.forEach((freq, i) => {
     const osc = audioCtx.createOscillator();
@@ -510,29 +1370,30 @@ function createAmbientMusic() {
     oscillators.push(osc);
   });
 
-  // Fade in
   gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 2);
   return gain;
 }
 
 let gainNode;
-musicBtn.addEventListener('click', () => {
-  if (!musicPlaying) {
-    gainNode = createAmbientMusic();
-    musicPlaying = true;
-    musicBtn.classList.add('playing');
-    musicBtn.innerHTML = '<span class="flex items-center gap-0.5"><span class="equalizer-bar"></span><span class="equalizer-bar"></span><span class="equalizer-bar"></span></span>';
-  } else {
-    if (gainNode) gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
-    setTimeout(() => { if (audioCtx) { audioCtx.close(); audioCtx = null; } oscillators = []; }, 1100);
-    musicPlaying = false;
-    musicBtn.classList.remove('playing');
-    musicBtn.innerHTML = '<i data-lucide="music" class="w-4 h-4 text-accent"></i>';
-    lucide.createIcons();
-  }
-});
+if (musicBtn) {
+  musicBtn.addEventListener('click', () => {
+    if (!musicPlaying) {
+      gainNode = createAmbientMusic();
+      musicPlaying = true;
+      musicBtn.classList.add('playing');
+      musicBtn.innerHTML = '<span class="flex items-center gap-0.5"><span class="equalizer-bar"></span><span class="equalizer-bar"></span><span class="equalizer-bar"></span></span>';
+    } else {
+      if (gainNode) gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+      setTimeout(() => { if (audioCtx) { audioCtx.close(); audioCtx = null; } oscillators = []; }, 1100);
+      musicPlaying = false;
+      musicBtn.classList.remove('playing');
+      musicBtn.innerHTML = '<i data-lucide="music" class="w-4 h-4 text-accent"></i>';
+      lucide.createIcons();
+    }
+  });
+}
 
-// Element SDK
+// Element SDK Initialization and Configuration
 const defaultConfig = {
   hero_heading: 'Dhruvendra P. Singh',
   hero_tagline: 'Crafting modern, responsive, and visually engaging digital experiences.',
@@ -558,6 +1419,14 @@ window.elementSdk.init({
 
     const size = config.font_size || defaultConfig.font_size;
     document.body.style.fontSize = size + 'px';
+
+    // Synchronize custom CSS RGB variables on live edit panel configurations
+    const root = document.documentElement;
+    if (config.background_color) root.style.setProperty('--primary-rgb', hexToRgb(config.background_color));
+    if (config.surface_color) root.style.setProperty('--secondary-rgb', hexToRgb(config.surface_color));
+    if (config.text_color) root.style.setProperty('--cream-rgb', hexToRgb(config.text_color));
+    if (config.accent_color) root.style.setProperty('--accent-rgb', hexToRgb(config.accent_color));
+    if (config.pink_color) root.style.setProperty('--pink-rgb', hexToRgb(config.pink_color));
   },
   mapToCapabilities: (config) => ({
     recolorables: [
